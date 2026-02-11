@@ -4,7 +4,7 @@ from uuid import UUID
 from typing import List
 from datetime import datetime
 
-from app.api.deps import get_db
+from app.db.session import get_db
 from app.db.schemas import RelationshipCreate, RelationshipOut, DataResponse
 from app.services import relationship_service
 

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import List
 
-from app.api.deps import get_db
+from app.db.session import get_db
 from app.services import ingest_service
 from app.db.schemas import IngestJobCreate
 

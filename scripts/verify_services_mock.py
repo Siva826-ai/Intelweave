@@ -12,6 +12,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from app.db.models import Relationship, EvidenceItem, Export, IngestJob
 from app.db.schemas import RelationshipCreate, EvidenceCreate, IngestJobCreate
 from app.services import relationship_service, evidence_service, audit_service, export_service, ingest_service
+from app.db.session import get_db
+
 
 class TestServices(unittest.TestCase):
     def setUp(self):

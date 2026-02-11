@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 from datetime import datetime
 
-from app.api.deps import get_db
+from app.db.session import get_db
 from app.db.schemas import EvidenceCreate, EvidenceOut, DataResponse
 from app.services import evidence_service
 

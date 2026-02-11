@@ -1,3 +1,4 @@
+from app.db.session import get_db
 from fastapi import APIRouter, Depends
 from app.core.security import require_clearance
 from app.services.export_service import generate_court_pdf, build_export_manifest, write_manifest
