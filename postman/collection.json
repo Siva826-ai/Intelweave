@@ -1,0 +1,591 @@
+{
+  "info": {
+    "name": "IntelWeave\u2122 API Collection v1.0",
+    "_postman_id": "9d7a2f4b-1b8e-4c9e-9e8b-0a3c4f2b1a10",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Court-safe, confidence-first investigation platform API requests for IntelWeave\u2122."
+  },
+  "item": [
+    {
+      "name": "Get Dashboard Summary",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cases/summary",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "cases",
+            "summary"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Get High Priority Signals",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/signals/high-priority",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "signals",
+            "high-priority"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Get System Integrity",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/system/integrity",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "system",
+            "integrity"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Get Case",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cases/{{case_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "cases",
+            "{{case_id}}"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Get Case Stats",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cases/{{case_id}}/stats",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "cases",
+            "{{case_id}}",
+            "stats"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Upload Ingest File",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/ingest/upload",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "ingest",
+            "upload"
+          ],
+          "query": []
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "case_id",
+              "value": "{{case_id}}",
+              "type": "text"
+            },
+            {
+              "key": "source_type",
+              "value": "cdr",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Ingest Validation",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/ingest/validation/{{job_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "ingest",
+            "validation",
+            "{{job_id}}"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "List Case Entities",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cases/{{case_id}}/entities",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "cases",
+            "{{case_id}}",
+            "entities"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Search Entities",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/entities/search?q={{q}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "entities",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "{{q}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Entity",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/entities/{{entity_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "entities",
+            "{{entity_id}}"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Get Entity Timeline",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/entities/{{entity_id}}/timeline",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "entities",
+            "{{entity_id}}",
+            "timeline"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Get Entity Connections",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/entities/{{entity_id}}/connections",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "entities",
+            "{{entity_id}}",
+            "connections"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Get Case Graph",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cases/{{case_id}}/graph",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "cases",
+            "{{case_id}}",
+            "graph"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Get Relationship",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/relationships/{{rel_id}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "relationships",
+            "{{rel_id}}"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Get Case Timeline",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cases/{{case_id}}/timeline?range={{range}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "cases",
+            "{{case_id}}",
+            "timeline"
+          ],
+          "query": [
+            {
+              "key": "range",
+              "value": "{{range}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "List Case Insights",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cases/{{case_id}}/insights",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "cases",
+            "{{case_id}}",
+            "insights"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Create Hypothesis (AI)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/insights/hypothesis",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "insights",
+            "hypothesis"
+          ],
+          "query": []
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"case_id\": \"{{case_id}}\",\n  \"hypothesis\": \"Entity A and Entity B coordinated within a 24h window.\",\n  \"constraints\": {\n    \"time_window_hours\": 24,\n    \"min_confidence\": 70\n  }\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Case Evidence (Court)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cases/{{case_id}}/evidence",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "cases",
+            "{{case_id}}",
+            "evidence"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Get Case Integrity Hash",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cases/{{case_id}}/integrity-hash",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "cases",
+            "{{case_id}}",
+            "integrity-hash"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "Export PDF",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/export/pdf",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "export",
+            "pdf"
+          ],
+          "query": []
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"case_id\": \"{{case_id}}\",\n  \"mode\": \"court\",\n  \"include\": [\n    \"timeline\",\n    \"network\",\n    \"insights\",\n    \"evidence_hashes\"\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Export Network Snapshot",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/export/network-snapshot",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "export",
+            "network-snapshot"
+          ],
+          "query": []
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"case_id\": \"{{case_id}}\",\n  \"mode\": \"court\",\n  \"include\": [\n    \"timeline\",\n    \"network\",\n    \"insights\",\n    \"evidence_hashes\"\n  ]\n}"
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.intelweave.local"
+    },
+    {
+      "key": "token",
+      "value": "REPLACE_ME"
+    },
+    {
+      "key": "case_id",
+      "value": "REPLACE_ME"
+    },
+    {
+      "key": "job_id",
+      "value": "REPLACE_ME"
+    },
+    {
+      "key": "entity_id",
+      "value": "REPLACE_ME"
+    },
+    {
+      "key": "rel_id",
+      "value": "REPLACE_ME"
+    },
+    {
+      "key": "q",
+      "value": "mustafa"
+    },
+    {
+      "key": "range",
+      "value": "7d"
+    }
+  ]
+}
