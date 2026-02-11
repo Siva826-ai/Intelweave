@@ -6,6 +6,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from uuid import UUID
+from sqlalchemy.orm import Session
+from app.db.models import Export
+from app.services.audit_service import log_action
 
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
@@ -83,3 +87,24 @@ def write_manifest(case_id: str, manifest: dict[str, Any]) -> Path:
     out = EXPORT_DIR / f"manifest_{case_id}_{int(datetime.utcnow().timestamp())}.json"
     out.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return out
+
+def create_export_record(
+    db: Session,
+    case_id: UUID,
+    export_type: str,
+    user_id: UUID,
+    file_hash: str
+) -> Export:
+    export = Export(
+        case_id=case_id,
+        export_type=export_type,
+        requested_by=user_id,
+        export_hash=file_hash,
+        created_at=datetime.utcnow()
+    )
+    db.add(export)
+    db.commit()
+    db.refresh(export)
+    
+    log_action(db, user_id, "create", "export", str(export.export_id), case_id)
+    return export
