@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID
 from sqlalchemy.orm import Session
+from app.db import models
 from app.db.models import Export
 from app.services.audit_service import log_action
 
@@ -27,8 +28,12 @@ def sha256_file(path: Path) -> str:
             h.update(chunk)
     return h.hexdigest()
 
-def generate_court_pdf(case_id: str, payload: dict) -> Path:
-    """Generate a minimal court-safe PDF: no AI suggestions; includes hashes and timestamps."""
+def generate_court_pdf(db: Session, case_id: UUID, payload: dict) -> Path:
+    """Generate a court-safe PDF: fetches actual case data from the database."""
+    case = db.get(models.Case, case_id)
+    if not case:
+        raise ValueError(f"Case {case_id} not found")
+
     out = EXPORT_DIR / f"court_{case_id}_{int(datetime.utcnow().timestamp())}.pdf"
     c = canvas.Canvas(str(out), pagesize=A4)
     w, h = A4
@@ -41,9 +46,29 @@ def generate_court_pdf(case_id: str, payload: dict) -> Path:
     c.setFont("Helvetica", 11)
     c.drawString(50, y, f"Case ID: {case_id}")
     y -= 18
-    c.drawString(50, y, f"Generated (UTC): {datetime.utcnow().isoformat()}")
+    c.drawString(50, y, f"Case Title: {case.title}")
     y -= 18
-    c.drawString(50, y, "Mode: Court (Read-only)")
+    c.drawString(50, y, f"Jurisdiction: {case.jurisdiction or 'N/A'}")
+    y -= 18
+    c.drawString(50, y, f"Integrity Score: {float(case.integrity_score)}%")
+    y -= 18
+    c.drawString(50, y, f"Generated (UTC): {datetime.utcnow().isoformat()}")
+    y -= 22
+
+    # Fetch Counts
+    entity_count = db.query(models.CaseEntity).filter(models.CaseEntity.case_id == case_id).count()
+    rel_count = db.query(models.Relationship).filter(models.Relationship.case_id == case_id).count()
+    evidence_count = db.query(models.EvidenceItem).filter(models.EvidenceItem.case_id == case_id).count()
+
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, "Case Summary Metrics")
+    y -= 18
+    c.setFont("Helvetica", 11)
+    c.drawString(70, y, f"• Total Entities: {entity_count}")
+    y -= 16
+    c.drawString(70, y, f"• Total Relationships: {rel_count}")
+    y -= 16
+    c.drawString(70, y, f"• Total Evidence Items: {evidence_count}")
     y -= 22
 
     c.setFont("Helvetica-Bold", 12)
@@ -54,22 +79,17 @@ def generate_court_pdf(case_id: str, payload: dict) -> Path:
     for item in include:
         c.drawString(70, y, f"• {item}")
         y -= 16
-        if y < 90:
-            c.showPage()
-            y = h - 60
 
+    y -= 15
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y-10, "Integrity Notes")
-    y -= 30
-    c.setFont("Helvetica", 11)
-    notes = [
-        "This pack contains evidence-backed summaries only.",
-        "AI suggestions are excluded in Court Mode.",
-        "All files are hash-anchored for traceability."
-    ]
-    for n in notes:
-        c.drawString(70, y, f"• {n}")
-        y -= 16
+    c.drawString(50, y, "Integrity Anchors")
+    y -= 18
+    c.setFont("Helvetica", 9)
+    # Fetch top 5 evidence hashes as anchors
+    hashes = db.query(models.EvidenceItem).filter(models.EvidenceItem.case_id == case_id).limit(5).all()
+    for h_item in hashes:
+        c.drawString(70, y, f"• {h_item.evidence_type}: {h_item.evidence_hash[:32]}...")
+        y -= 12
 
     c.showPage()
     c.save()

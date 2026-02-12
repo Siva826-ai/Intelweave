@@ -86,6 +86,13 @@ class IngestFileOut(BaseModel):
 
 
 
+
+class CaseCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=255)
+    description: Optional[str] = None
+    jurisdiction: Optional[str] = None
+    status: str = "draft"
+
 class CaseOut(BaseModel):
     case_id: UUID
     title: str
@@ -109,3 +116,19 @@ class InsightOut(BaseModel):
     explanation: Optional[str] = None
     confidence_score: float = Field(ge=0, le=100)
     created_at: datetime
+
+class GraphNode(BaseModel):
+    id: UUID
+    label: str
+    type: str
+
+class GraphEdge(BaseModel):
+    id: UUID
+    source: UUID
+    target: UUID
+    basis: str
+    weight: float
+
+class CaseGraph(BaseModel):
+    nodes: List[GraphNode]
+    edges: List[GraphEdge]

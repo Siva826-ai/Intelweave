@@ -102,6 +102,7 @@ class AuditLog(Base):
     action: Mapped[str] = mapped_column(String(255), nullable=False)
     target_type: Mapped[str] = mapped_column(String(50), nullable=False)
     target_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    ip_address: Mapped[str | None] = mapped_column(String(45))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now, nullable=False)
 
 class IngestJob(Base):
