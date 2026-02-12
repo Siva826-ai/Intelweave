@@ -7,6 +7,9 @@ from app.db.session import get_db
 from app.services import ingest_service
 from app.db.schemas import IngestJobCreate
 
+from app.db import models
+from app.api.deps import get_current_active_user
+
 router = APIRouter()
 
 @router.post("/upload")
@@ -14,13 +17,14 @@ def upload_files(
     case_id: UUID = Form(...),
     source_type: str = Form(...),
     files: List[UploadFile] = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_active_user)
 ):
+    # User is guaranteed to exist by get_current_active_user
+
     # 1. Create Ingest Job (New Architecture Requirement)
     job_data = IngestJobCreate(source_type=source_type)
-    # Using a placeholder user_id as auth context is not yet fully available in this snippet
-    user_id = UUID("00000000-0000-0000-0000-000000000000") 
-    job = ingest_service.create_ingest_job(db, case_id, job_data, user_id)
+    job = ingest_service.create_ingest_job(db, case_id, job_data, user.user_id)
 
     processed_files = []
     
@@ -53,4 +57,29 @@ def upload_files(
         "message": "Files uploaded and ingest job created",
         "job_id": str(job.job_id),
         "files": processed_files
+    }
+
+@router.get("/validation/{job_id}")
+def get_ingest_validation(job_id: UUID, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
+    job = db.get(models.IngestJob, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    files = db.query(models.IngestFile).filter(models.IngestFile.job_id == job_id).all()
+    
+    return {
+        "job_id": str(job.job_id),
+        "status": job.status,
+        "source_type": job.source_type,
+        "validation_score": float(job.validation_score),
+        "created_at": job.created_at.isoformat(),
+        "files": [
+            {
+                "file_id": str(f.file_id),
+                "filename": f.filename,
+                "status": "valid", 
+                "row_count": f.row_count,
+                "hash": f.sha256_hash
+            } for f in files
+        ]
     }

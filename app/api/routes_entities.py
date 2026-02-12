@@ -1,17 +1,19 @@
 from fastapi import APIRouter, Depends, Query
+from uuid import UUID
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.db import models
 from app.db.schemas import EntityOut
 from app.core.security import require_clearance
+from app.api.deps import get_current_active_user
 
 router = APIRouter()
 
-_guard = require_clearance(1)
+# _guard = require_clearance(1) - Removed global guard to use per-route dependency if needed, or just replace usage
 
 
 @router.get("/search")
-def search_entities(q: str = Query(..., min_length=1), db: Session = Depends(get_db), _=Depends(_guard)):
+def search_entities(q: str = Query(..., min_length=1), db: Session = Depends(get_db), user=Depends(get_current_active_user)):
     rows = db.query(models.Entity).filter(models.Entity.label.ilike(f"%{q}%")).limit(50).all()
     return {
         "query": q,
@@ -25,7 +27,7 @@ def search_entities(q: str = Query(..., min_length=1), db: Session = Depends(get
     }
 
 @router.get("/{entity_id}")
-def get_entity(entity_id: str, db: Session = Depends(get_db), _=Depends(_guard)):
+def get_entity(entity_id: UUID, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
     e = db.get(models.Entity, entity_id)
     if not e:
         return {"detail": "Not found"}

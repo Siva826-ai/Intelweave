@@ -1,16 +1,18 @@
 from fastapi import APIRouter, Depends
+from uuid import UUID
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.db import models
 from app.core.security import require_clearance
+from app.api.deps import get_current_active_user
 
 router = APIRouter()
 
-_guard = require_clearance(1)
+# _guard = require_clearance(1)
 
 
 @router.get("/case/{case_id}")
-def list_case_insights(case_id: str, db: Session = Depends(get_db), _=Depends(_guard)):
+def list_case_insights(case_id: UUID, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
     rows = db.query(models.Insight).filter(models.Insight.case_id == case_id).order_by(models.Insight.created_at.desc()).limit(200).all()
     return {"case_id": case_id, "items": [
         {
@@ -23,6 +25,6 @@ def list_case_insights(case_id: str, db: Session = Depends(get_db), _=Depends(_g
     ]}
 
 @router.post("/hypothesis")
-def create_hypothesis(payload: dict, db: Session = Depends(get_db), _=Depends(_guard)):
+def create_hypothesis(payload: dict, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
     # Stub: you will validate payload and run AI scoring here.
     return {"status": "received", "payload": payload, "note": "Wire to AI hypothesis pipeline."}

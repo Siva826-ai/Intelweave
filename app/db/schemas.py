@@ -86,6 +86,13 @@ class IngestFileOut(BaseModel):
 
 
 
+
+class CaseCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=255)
+    description: Optional[str] = None
+    jurisdiction: Optional[str] = None
+    status: str = "draft"
+
 class CaseOut(BaseModel):
     case_id: UUID
     title: str

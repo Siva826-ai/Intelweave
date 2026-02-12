@@ -25,7 +25,8 @@ def _unauthorized(msg: str = "Unauthorized"):
 def decode_token(token: str) -> CurrentUser:
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-    except Exception:
+    except Exception as e:
+        print(f"JWT Decode Error: {e}") # Debug logging
         _unauthorized("Invalid token")
 
     return CurrentUser(

@@ -6,6 +6,8 @@ from datetime import datetime
 from app.db.session import get_db
 from app.db.schemas import EvidenceCreate, EvidenceOut, DataResponse
 from app.services import evidence_service
+from app.api.deps import get_current_active_user
+from app.db import models
 
 router = APIRouter()
 
@@ -15,12 +17,12 @@ def create_evidence_endpoint(
     payload: EvidenceCreate,
     db: Session = Depends(get_db),
     court_mode: bool = Query(False),
-    user_id: UUID = UUID("00000000-0000-0000-0000-000000000000")
+    user: models.User = Depends(get_current_active_user)
 ):
     if court_mode:
         raise HTTPException(status_code=403, detail="Modifications forbidden in Court Mode")
         
-    evidence = evidence_service.create_evidence(db, case_id, payload, user_id)
+    evidence = evidence_service.create_evidence(db, case_id, payload, user.user_id)
     return {
         "data": evidence,
         "metadata": {
