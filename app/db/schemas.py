@@ -116,3 +116,19 @@ class InsightOut(BaseModel):
     explanation: Optional[str] = None
     confidence_score: float = Field(ge=0, le=100)
     created_at: datetime
+
+class GraphNode(BaseModel):
+    id: UUID
+    label: str
+    type: str
+
+class GraphEdge(BaseModel):
+    id: UUID
+    source: UUID
+    target: UUID
+    basis: str
+    weight: float
+
+class CaseGraph(BaseModel):
+    nodes: List[GraphNode]
+    edges: List[GraphEdge]

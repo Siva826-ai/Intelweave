@@ -8,7 +8,8 @@ def log_action(
     action: str,
     target_type: str,
     target_id: str,
-    case_id: UUID | None = None
+    case_id: UUID | None = None,
+    ip_address: str | None = None
 ) -> AuditLog:
     """
     Log an action to the audit log.
@@ -19,7 +20,8 @@ def log_action(
         case_id=case_id,
         action=action,
         target_type=target_type,
-        target_id=target_id
+        target_id=target_id,
+        ip_address=ip_address
     )
     db.add(log_entry)
     db.commit()

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Request
 from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import List
@@ -17,6 +17,7 @@ def upload_files(
     case_id: UUID = Form(...),
     source_type: str = Form(...),
     files: List[UploadFile] = File(...),
+    request: Request = None,
     db: Session = Depends(get_db),
     user: models.User = Depends(get_current_active_user)
 ):
@@ -24,7 +25,8 @@ def upload_files(
 
     # 1. Create Ingest Job (New Architecture Requirement)
     job_data = IngestJobCreate(source_type=source_type)
-    job = ingest_service.create_ingest_job(db, case_id, job_data, user.user_id)
+    ip = request.client.host if request else None
+    job = ingest_service.create_ingest_job(db, case_id, job_data, user.user_id, ip_address=ip)
 
     processed_files = []
     
