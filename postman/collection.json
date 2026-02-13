@@ -5,6 +5,62 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": "Court-safe, confidence-first investigation platform API requests for IntelWeave\u2122."
   },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Automatic Token Refresh Logic",
+          "const token = pm.collectionVariables.get('token');",
+          "const refreshToken = pm.collectionVariables.get('refresh_token');",
+          "const baseUrl = pm.collectionVariables.get('baseUrl');",
+          "",
+          "// Helper to check if token is expired (decoded check)",
+          "function isExpired(token) {",
+          "    if (!token) return true;",
+          "    try {",
+          "        const base64Url = token.split('.')[1];",
+          "        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');",
+          "        const payload = JSON.parse(atob(base64));",
+          "        const now = Math.floor(Date.now() / 1000);",
+          "        return payload.exp < (now + 60); // Expired if it expires in less than 60 seconds",
+          "    } catch (e) {",
+          "        return true;",
+          "    }",
+          "}",
+          "",
+          "if (pm.request.url.getPath().includes('auth')) {",
+          "    return; // Don't refresh for auth routes",
+          "}",
+          "",
+          "if (isExpired(token)) {",
+          "    console.log('Token expired or missing, attempting refresh...');",
+          "    ",
+          "    if (refreshToken && !isExpired(refreshToken)) {",
+          "        pm.sendRequest({",
+          "            url: baseUrl + '/auth/refresh',",
+          "            method: 'POST',",
+          "            header: { 'Content-Type': 'application/json' },",
+          "            body: {",
+          "                mode: 'raw',",
+          "                raw: JSON.stringify({ refresh_token: refreshToken })",
+          "            }",
+          "        }, (err, res) => {",
+          "            if (!err && res.code === 200) {",
+          "                const data = res.json();",
+          "                pm.collectionVariables.set('token', data.access_token);",
+          "                console.log('Token refreshed successfully');",
+          "            } else {",
+          "                console.error('Failed to refresh token', err || res.body);",
+          "            }",
+          "        });",
+          "    }",
+          "}"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ],
   "item": [
     {
       "name": "Get Dashboard Summary",
@@ -72,6 +128,51 @@
             "integrity"
           ],
           "query": []
+        }
+      }
+    },
+    {
+      "name": "Create Case",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();",
+              "if (response.case_id) {",
+              "    pm.collectionVariables.set(\"case_id\", response.case_id);",
+              "    console.log(\"New Case ID saved:\", response.case_id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Intelligence Operation: Alpha\",\n  \"jurisdiction\": \"International\",\n  \"status\": \"active\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/cases/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "cases",
+            ""
+          ]
         }
       }
     },
@@ -492,6 +593,92 @@
       }
     },
     {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.access_token) {",
+                  "    pm.collectionVariables.set(\"token\", response.access_token);",
+                  "    pm.collectionVariables.set(\"refresh_token\", response.refresh_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.access_token) {",
+                  "    pm.collectionVariables.set(\"token\", response.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Export PDF",
       "request": {
         "method": "POST",
@@ -557,11 +744,19 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "https://api.intelweave.local"
+      "value": "http://localhost:8001"
+    },
+    {
+      "key": "email",
+      "value": "admin@intelweave.local"
     },
     {
       "key": "token",
-      "value": "REPLACE_ME"
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
     },
     {
       "key": "case_id",

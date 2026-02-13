@@ -7,11 +7,13 @@ from app.api.routes_exports import router as exports_router
 from app.api.routes_relationships import router as relationships_router
 from app.api.routes_evidence import router as evidence_router
 from app.api.routes_signals import router as signals_router
+from app.api.routes_auth import router as auth_router
 from app.api.routes_system import router as system_router
 
 
 app = FastAPI(title="IntelWeave API", version="1.0")
 
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(cases_router, prefix="/cases", tags=["cases"])
 app.include_router(ingest_router, prefix="/ingest", tags=["ingest"])
 app.include_router(entities_router, prefix="/entities", tags=["entities"])

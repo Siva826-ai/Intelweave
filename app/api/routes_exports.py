@@ -1,26 +1,22 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
 from app.db import models
 from app.db.session import get_db
 from app.api.deps import get_current_active_user
+from app.core.security import require_clearance
 from app.services.export_service import generate_court_pdf, build_export_manifest, write_manifest, create_export_record, sha256_file
 from app.services.audit_service import log_action
 from uuid import UUID
 from pathlib import Path
 
-router = APIRouter()
-_guard = require_clearance(2)  # exports require higher clearance
+# All export routes require clearance level 2
+router = APIRouter(dependencies=[Depends(require_clearance(2))])
 
 @router.post("/pdf")
 def export_pdf(payload: dict, request: Request, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
-    # User clearance check is already in main or can be done here. 
-    # Using specific requirement check:
-    if user.clearance_level < 2:
-         return {"detail": "Insufficient clearance"}
-
     case_str = payload.get("case_id")
     if not case_str:
-        return {"detail": "case_id required"}
+        raise HTTPException(status_code=400, detail="case_id required")
     case_id = UUID(case_str)
     
     pdf_path = generate_court_pdf(db, case_id, payload)
@@ -41,16 +37,11 @@ def export_pdf(payload: dict, request: Request, db: Session = Depends(get_db), u
         "manifest": str(manifest_path)
     }
 
-# Remove redundant hashlib_sha
-
 @router.post("/network-snapshot")
 def export_network_snapshot(payload: dict, request: Request, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
-    if user.clearance_level < 2:
-         return {"detail": "Insufficient clearance"}
-         
     case_id_str = payload.get("case_id")
     if not case_id_str:
-        return {"detail": "case_id required"}
+        raise HTTPException(status_code=400, detail="case_id required")
     case_id = UUID(case_id_str)
     
     log_action(db, user.user_id, "export_network", "case", str(case_id), case_id, request.client.host)
