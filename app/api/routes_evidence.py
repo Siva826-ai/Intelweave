@@ -44,7 +44,7 @@ def list_case_evidence_endpoint(
     """
     Lists all evidence items associated with a specific case.
     """
-    items = db.query(models.EvidenceItem).filter(models.EvidenceItem.case_id == case_id).all()
+    items = evidence_service.get_case_evidence(db, case_id)
     return {
         "data": items,
         "metadata": {

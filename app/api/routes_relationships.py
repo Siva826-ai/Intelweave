@@ -52,7 +52,7 @@ def get_relationship_endpoint(
     """
     Retrieves a single relationship by its ID.
     """
-    rel = db.get(models.Relationship, rel_id)
+    rel = relationship_service.get_relationship(db, rel_id)
     if not rel:
         raise HTTPException(status_code=404, detail="Relationship not found")
     

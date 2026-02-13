@@ -1,16 +1,19 @@
-import hashlib
 from sqlalchemy.orm import Session
 from uuid import UUID
+from typing import List
 from app.db.models import EvidenceItem
 from app.db.schemas import EvidenceCreate
 from app.services.audit_service import log_action
+from app.repositories import evidence_repository
 
 def create_evidence(db: Session, case_id: UUID, evidence: EvidenceCreate, user_id: UUID) -> EvidenceItem:
     # Generate Hash
+    import hashlib
     hash_input = f"{case_id}{evidence.evidence_type}{evidence.description}".encode()
     evidence_hash = hashlib.sha256(hash_input).hexdigest()
     
-    db_evidence = EvidenceItem(
+    db_evidence = evidence_repository.create_evidence(
+        db, 
         case_id=case_id,
         insight_id=evidence.insight_id,
         entity_id=evidence.entity_id,
@@ -19,9 +22,9 @@ def create_evidence(db: Session, case_id: UUID, evidence: EvidenceCreate, user_i
         description=evidence.description,
         evidence_hash=evidence_hash
     )
-    db.add(db_evidence)
-    db.commit()
-    db.refresh(db_evidence)
     
     log_action(db, user_id, "create", "evidence", str(db_evidence.evidence_id), case_id)
     return db_evidence
+
+def get_case_evidence(db: Session, case_id: UUID) -> List[EvidenceItem]:
+    return evidence_repository.get_evidence_by_case(db, case_id)
