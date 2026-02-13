@@ -56,21 +56,49 @@ def generate_court_pdf(db: Session, case_id: UUID, payload: dict) -> Path:
     y -= 22
 
     # Fetch Counts
-    entity_count = db.query(models.CaseEntity).filter(models.CaseEntity.case_id == case_id).count()
-    rel_count = db.query(models.Relationship).filter(models.Relationship.case_id == case_id).count()
+    entity_objs = db.query(models.Entity).join(models.CaseEntity).filter(models.CaseEntity.case_id == case_id).all()
+    rel_objs = db.query(models.Relationship).filter(models.Relationship.case_id == case_id).all()
     evidence_count = db.query(models.EvidenceItem).filter(models.EvidenceItem.case_id == case_id).count()
 
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y, "Case Summary Metrics")
     y -= 18
     c.setFont("Helvetica", 11)
-    c.drawString(70, y, f"• Total Entities: {entity_count}")
+    c.drawString(70, y, f"• Total Entities: {len(entity_objs)}")
     y -= 16
-    c.drawString(70, y, f"• Total Relationships: {rel_count}")
+    c.drawString(70, y, f"• Total Relationships: {len(rel_objs)}")
     y -= 16
     c.drawString(70, y, f"• Total Evidence Items: {evidence_count}")
-    y -= 22
+    y -= 25
 
+    # Entity Details
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, "Captured Entities")
+    y -= 18
+    c.setFont("Helvetica", 9)
+    for e in entity_objs[:20]: # Limit for PDF space in basic version
+        if y < 80:
+            c.showPage()
+            y = h - 60
+            c.setFont("Helvetica", 9)
+        c.drawString(70, y, f"ID: {str(e.entity_id)[:8]}... | Label: {e.label} | Type: {e.entity_type} | Conf: {float(e.confidence_score)}%")
+        y -= 14
+    
+    y -= 20
+    # Relationship Details
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, "Validated Relationships")
+    y -= 18
+    c.setFont("Helvetica", 9)
+    for r in rel_objs[:20]:
+        if y < 80:
+            c.showPage()
+            y = h - 60
+            c.setFont("Helvetica", 9)
+        c.drawString(70, y, f"Source: {str(r.source_entity_id)[:8]}... ➔ Target: {str(r.target_entity_id)[:8]}... | Strength: {float(r.strength_score)}")
+        y -= 14
+
+    y -= 25
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y, "Included Sections")
     y -= 18
@@ -82,13 +110,16 @@ def generate_court_pdf(db: Session, case_id: UUID, payload: dict) -> Path:
 
     y -= 15
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "Integrity Anchors")
+    c.drawString(50, y, "Integrity Anchors (Evidence Hashes)")
     y -= 18
-    c.setFont("Helvetica", 9)
-    # Fetch top 5 evidence hashes as anchors
-    hashes = db.query(models.EvidenceItem).filter(models.EvidenceItem.case_id == case_id).limit(5).all()
+    c.setFont("Helvetica", 8)
+    hashes = db.query(models.EvidenceItem).filter(models.EvidenceItem.case_id == case_id).limit(10).all()
     for h_item in hashes:
-        c.drawString(70, y, f"• {h_item.evidence_type}: {h_item.evidence_hash[:32]}...")
+        if y < 50:
+            c.showPage()
+            y = h - 60
+            c.setFont("Helvetica", 8)
+        c.drawString(70, y, f"• {h_item.evidence_type} [{str(h_item.evidence_id)[:8]}]: {h_item.evidence_hash}")
         y -= 12
 
     c.showPage()

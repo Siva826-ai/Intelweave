@@ -1,17 +1,18 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.db.session import get_db
 from app.db import models
 from app.core.security import require_clearance
 from app.api.deps import get_current_active_user
+from app.services.audit_service import log_action
 
 router = APIRouter()
 
 # _guard = require_clearance(1)
 
 @router.get("/integrity")
-def get_system_integrity(db: Session = Depends(get_db), user=Depends(get_current_active_user)):
+def get_system_integrity(request: Request, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
     """
     Get system-wide integrity metrics.
     """
@@ -23,6 +24,8 @@ def get_system_integrity(db: Session = Depends(get_db), user=Depends(get_current
     
     # 3. Calculate Average Integrity Score (if cases exist)
     avg_integrity = db.query(func.avg(models.Case.integrity_score)).scalar() or 100.0
+    
+    log_action(db, user.user_id, "view_system_integrity", "system", "health", ip_address=request.client.host)
     
     # 4. System Status Logic (Placeholder)
     system_status = "operational"

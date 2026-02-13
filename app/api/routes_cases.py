@@ -23,31 +23,36 @@ def create_case(payload: CaseCreate, request: Request, db: Session = Depends(get
 
 
 @router.get("/summary")
-def cases_summary(db: Session = Depends(get_db), _=Depends(_guard)):
+def cases_summary(request: Request, db: Session = Depends(get_db), _=Depends(_guard), user=Depends(get_current_active_user)):
+    audit_service.log_action(db, user.user_id, "view_cases_summary", "system", "all", ip_address=request.client.host)
     return case_service.get_cases_summary(db)
 
 @router.get("/{case_id}", response_model=CaseOut)
-def get_case(case_id: UUID, db: Session = Depends(get_db), _=Depends(_guard)):
+def get_case(case_id: UUID, request: Request, db: Session = Depends(get_db), _=Depends(_guard), user=Depends(get_current_active_user)):
     c = case_service.get_case(db, case_id)
     if not c:
         return {"detail": "Not found"}
+    audit_service.log_action(db, user.user_id, "view_case", "case", str(case_id), case_id, request.client.host)
     return c
 
 @router.get("/{case_id}/stats")
-def case_stats(case_id: UUID, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
+def case_stats(case_id: UUID, request: Request, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
     stats = case_service.get_case_stats(db, case_id)
+    audit_service.log_action(db, user.user_id, "view_case_stats", "case", str(case_id), case_id, request.client.host)
     return {
         "case_id": case_id,
         "stats": stats
     }
 
 @router.get("/{case_id}/entities")
-def get_case_entities(case_id: UUID, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
+def get_case_entities(case_id: UUID, request: Request, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
     entities = case_service.get_case_entities(db, case_id)
+    audit_service.log_action(db, user.user_id, "view_case_entities", "case", str(case_id), case_id, request.client.host)
     return {"case_id": case_id, "entities": entities}
 
 @router.get("/{case_id}/graph", response_model=CaseGraph)
-def get_case_graph(case_id: UUID, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
+def get_case_graph(case_id: UUID, request: Request, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
+    audit_service.log_action(db, user.user_id, "view_case_graph", "case", str(case_id), case_id, request.client.host)
     return case_service.get_case_graph(db, case_id)
 
 @router.get("/{case_id}/timeline", response_model=List[EvidenceOut])
