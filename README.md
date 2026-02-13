@@ -12,13 +12,14 @@ Court-safe, confidence-first intelligence analysis platform skeleton.
    docker compose up --build
    ```
 3. Open:
-   - API: http://localhost:8000
-   - Swagger: http://localhost:8000/docs
+   - API: http://localhost:8001
+   - Swagger: http://localhost:8001/docs
+   - Database: localhost:8088 (PostgreSQL)
 
 ## Principles
 - **No prediction / no accusation**. AI outputs are *interpretive intelligence* with confidence + evidence basis.
 - **Court Mode** is read-only and hides AI suggestions.
-- **Integrity**: ingest validation scores, sha256 hashes, append-only audit logs.
+- **Integrity**: ingest validation scores, sha256 hashes, IP-tracked and append-only audit logs.
 
 ## Key Endpoints
 - `/cases/summary`
@@ -26,28 +27,20 @@ Court-safe, confidence-first intelligence analysis platform skeleton.
 - `/ingest/upload`
 - `/entities/search?q=`
 - `/cases/{case_id}/insights`
-- `/export/pdf` (stub for packaging)
+- `/export/pdf` (Generate full Evidence Pack)
 
-## Training
-Run (inside container or local venv):
+## Verification & Scripts
+Inside the `api` container:
 ```bash
-python scripts/train_models.py
+# Verify 'Court-Safe' Blueprint compliance
+python scripts/verify_blueprint.py
+
+# Seed demo data
+python scripts/seed_demo_data.py
 ```
-
-Artifacts saved to `artifacts/`.
-
 
 ## Auth (v1.1)
 - All endpoints require `Authorization: Bearer <JWT>`.
 - JWT claims expected: `sub` (user_id), `email`, `clearance_level`, `roles`.
 - Exports require clearance >= 2.
 
-Example payload:
-```json
-{
-  "sub": "<uuid>",
-  "email": "analyst@org",
-  "clearance_level": 2,
-  "roles": ["analyst"]
-}
-```

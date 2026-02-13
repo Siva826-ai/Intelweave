@@ -14,7 +14,7 @@ IntelWeave is a **court-safe, confidence-first intelligence analysis platform** 
   - `/insights` - AI-generated insights
   - `/cases/{id}/relationships` - Entity relationships
   - `/cases/{id}/evidence` - Evidence items
-  - `/cases/{id}/exports` - Export functionality
+  - `/export/pdf` - Court-safe Evidence Pack generation
 - Health check endpoint at `/health`
 
 ### 2. **Security Layer** (`app/core/security.py`)
@@ -41,7 +41,7 @@ Core entities:
 - **EvidenceItem**: Individual evidence pieces (with SHA256 hashes)
 - **IngestJob/IngestFile**: File upload tracking
 - **Export**: Export history
-- **AuditLog**: Append-only audit trail
+- **AuditLog**: IP-tracked, append-only audit trail
 
 #### Session Management (`app/db/session.py`)
 - SQLAlchemy session factory
@@ -92,7 +92,7 @@ HTTP Request → Route Handler → Security Guard (clearance check) → Service 
   - Enforces "Court Mode" (read-only when enabled)
 
 **`routes_exports.py`**
-- Export functionality (requires clearance >= 2)
+- `POST /export/pdf` - Generate full court-safe PDF (requires clearance >= 2)
 
 ### 5. **Service Layer** (`app/services/`)
 
@@ -209,7 +209,7 @@ Business logic separated from routes:
    - Hash-based deduplication
 
 4. **Auditability**:
-   - Every action logged via `audit_service`
+   - Every action logged via `audit_service` with **IP tracking**
    - User tracking via JWT claims
    - Timestamps on all records
 
