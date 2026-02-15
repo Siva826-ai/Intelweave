@@ -51,8 +51,30 @@ class ForensicAgent:
         for addr in addresses:
             entities.append({
                 "label": addr,
-                "type": "ip", # Mapping to existing IP/Device/Other types for now
+                "type": "ip", # Mapping to existing types
                 "risk_score": 0.0,
+                "confidence_score": 90.0
+            })
+
+        # 3. Dates (Forensic Timeline)
+        date_pattern = r"\b(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|[A-Z][a-z]+ \d{1,2}, \d{4})\b"
+        dates = set(re.findall(date_pattern, text))
+        for d in dates:
+            entities.append({
+                "label": d,
+                "type": "unknown",
+                "risk_score": 0.0,
+                "confidence_score": 95.0
+            })
+
+        # 4. Phone Numbers
+        phone_pattern = r"\b(\d{3}[-.\s]??\d{3}[-.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-.\s]??\d{4})\b"
+        phones = set(re.findall(phone_pattern, text))
+        for p in phones:
+            entities.append({
+                "label": p,
+                "type": "phone",
+                "risk_score": 10.0, # Slightly higher risk for investigation
                 "confidence_score": 90.0
             })
             
