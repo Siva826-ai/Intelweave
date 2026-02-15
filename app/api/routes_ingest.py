@@ -4,7 +4,7 @@ from uuid import UUID
 from typing import List
 
 from app.db.session import get_db
-from app.services import ingest_service
+from app.services import ingest_service, agent_service
 from app.db.schemas import IngestJobCreate, IngestJobOut, DataResponse
 
 from app.db import models
@@ -56,6 +56,15 @@ def upload_files(
             "job_id": str(job.job_id)
         })
         
+        # 4. Trigger Forensic AI Agent (New Intelligence Layer)
+        try:
+            # Decode content for agent analysis
+            text_content = content.decode("utf-8", errors="ignore")
+            agent_service.run_forensic_discovery(db, job.job_id, text_content)
+        except Exception as e:
+            # Log error but don't fail upload
+            print(f"Agent discovery failed: {e}")
+            
     return {
         "message": "Files uploaded and ingest job created",
         "job_id": str(job.job_id),
