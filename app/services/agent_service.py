@@ -5,14 +5,38 @@ from app.db import models
 from app.repositories import entity_repository, relationship_repository, insight_repository
 from app.services import entity_service
 from app.db.schemas import EntityCreate, InsightCreate
+import io
+try:
+    from pypdf import PdfReader
+    PYPDF_AVAILABLE = True
+except ImportError:
+    PYPDF_AVAILABLE = False
+
 
 class AgentService:
     def __init__(self):
         self.agent = ForensicAgent()
 
-    def run_forensic_discovery(self, db: Session, job_id: UUID, text_content: str):
+    def extract_text_from_pdf(self, content: bytes) -> str:
+        """
+        Helper to extract structured text from forensic PDF binaries.
+        """
+        try:
+            if not PYPDF_AVAILABLE:
+                raise ImportError("pypdf library not found.")
+            reader = PdfReader(io.BytesIO(content))
+            return " ".join([page.extract_text() for page in reader.pages])
+        except ImportError:
+            print("pypdf library not found. Run 'pip install pypdf'")
+            return ""
+        except Exception as e:
+            print(f"PDF Extraction failed: {e}")
+            return ""
+
+    def run_forensic_discovery(self, db: Session, job_id: UUID, content: bytes, filename: str = ""):
         """
         Coordinates the agent's reasoning and persists findings to the database.
+        Detects if content is PDF or Text and extracts accordingly.
         """
         # 1. Get Job and Case Details
         job = db.get(models.IngestJob, job_id)
@@ -21,13 +45,29 @@ class AgentService:
         
         case_id = job.case_id
         
-        # 2. Run AI Agent Analysis
+        # 2. Extract Text based on File Type
+        text_content = ""
+        if filename.lower().endswith(".pdf") or (content and content.startswith(b"%PDF")):
+            print(f"Discovery: Processing PDF {filename}")
+            text_content = self.extract_text_from_pdf(content)
+        else:
+            print(f"Discovery: Processing Text {filename}")
+            text_content = content.decode("utf-8", errors="ignore")
+
+        if not text_content:
+            reason = "Missing pypdf library" if filename.lower().endswith(".pdf") else "Empty content"
+            print(f"Discovery: No text extracted. Reason: {reason}")
+            return {"entities": [], "relationships": [], "insights": [], "skipped_reason": reason}
+
+        # 3. Run AI Agent Analysis
         findings = self.agent.analyze_document(text_content)
+        findings["skipped_reason"] = None 
+        print(f"Discovery: Found {len(findings['entities'])} entities, {len(findings['insights'])} insights.")
         
         # 3. Persist Entities
-        entity_map = {} # Map labels to created Entity IDs for relationships
+        entity_map = {} 
         for entity_data in findings["entities"]:
-            # Check if exists in case already (optional, simple version creates if not in case)
+            print(f"Saving Entity: {entity_data['label']}")
             db_entity = entity_repository.create_entity(
                 db, 
                 entity_type=entity_data["type"],
@@ -69,5 +109,6 @@ class AgentService:
             )
             
         db.commit()
+        return findings
 
 agent_service = AgentService()

@@ -4,7 +4,8 @@ from uuid import UUID
 from typing import List
 
 from app.db.session import get_db
-from app.services import ingest_service, agent_service
+from app.services import ingest_service
+from app.services.agent_service import agent_service
 from app.db.schemas import IngestJobCreate, IngestJobOut, DataResponse
 
 from app.db import models
@@ -57,18 +58,29 @@ def upload_files(
         })
         
         # 4. Trigger Forensic AI Agent (New Intelligence Layer)
+        discovery_summary = {"status": "skipped"}
         try:
-            # Decode content for agent analysis
-            text_content = content.decode("utf-8", errors="ignore")
-            agent_service.run_forensic_discovery(db, job.job_id, text_content)
+            findings = agent_service.run_forensic_discovery(db, job.job_id, content, f.filename)
+            if findings and findings.get("skipped_reason"):
+                discovery_summary = {
+                    "status": "skipped",
+                    "reason": findings["skipped_reason"]
+                }
+            elif findings:
+                discovery_summary = {
+                    "status": "success",
+                    "entities_found": len(findings["entities"]),
+                    "insights_found": len(findings["insights"])
+                }
         except Exception as e:
-            # Log error but don't fail upload
+            discovery_summary = {"status": "failed", "error": str(e)}
             print(f"Agent discovery failed: {e}")
             
     return {
         "message": "Files uploaded and ingest job created",
         "job_id": str(job.job_id),
-        "files": processed_files
+        "files": processed_files,
+        "ai_discovery": discovery_summary
     }
 
 @router.get("/validation/{job_id}")
