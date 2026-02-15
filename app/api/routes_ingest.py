@@ -17,7 +17,7 @@ router = APIRouter()
 def upload_files(
     case_id: UUID = Form(...),
     source_type: str = Form(...),
-    files: List[UploadFile] = File(...),
+    file: List[UploadFile] = File(...),
     request: Request = None,
     db: Session = Depends(get_db),
     user: models.User = Depends(get_current_active_user)
@@ -32,8 +32,8 @@ def upload_files(
     processed_files = []
 
     
-    for file in files:
-        content = file.file.read()
+    for f in file:
+        content = f.file.read()
         
         # Calculate SHA256 (Compliance)
         import hashlib
@@ -43,14 +43,14 @@ def upload_files(
         file_record = ingest_service.add_file_to_job(
             db, 
             job.job_id, 
-            file.filename, 
-            file.content_type or "application/octet-stream", 
+            f.filename, 
+            f.content_type or "application/octet-stream", 
             file_hash, 
             row_count=0 # Placeholder
         )
         
         processed_files.append({
-            "filename": file.filename,
+            "filename": f.filename,
             "status": "uploaded",
             "file_id": str(file_record.file_id),
             "job_id": str(job.job_id)
