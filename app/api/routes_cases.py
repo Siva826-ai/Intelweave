@@ -82,11 +82,5 @@ def list_case_insights(case_id: UUID, db: Session = Depends(get_db), user=Depend
     """
     rows = insight_service.list_case_insights(db, case_id)
     return {"case_id": case_id, "items": [
-        {
-            "insight_id": str(r.insight_id),
-            "severity": r.severity,
-            "summary": r.summary,
-            "confidence_score": float(r.confidence_score),
-            "created_at": r.created_at.isoformat()
-        } for r in rows
+        InsightOut.model_validate(r) for r in rows
     ]}

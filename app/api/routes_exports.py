@@ -9,8 +9,8 @@ from app.services.audit_service import log_action
 from uuid import UUID
 from pathlib import Path
 
-# All export routes require clearance level 2
-router = APIRouter(dependencies=[Depends(require_clearance(2))])
+# All export routes require clearance level 1 (Updated for Demo)
+router = APIRouter(dependencies=[Depends(require_clearance(1))])
 
 @router.post("/pdf")
 def export_pdf(payload: dict, request: Request, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
