@@ -3,8 +3,12 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.db import models
+from app.db.schemas import InsightCreate, InsightOut, DataResponse
 from app.core.security import require_clearance
 from app.api.deps import get_current_active_user
+from app.services import insight_service
+from app.services.audit_service import log_action
+from fastapi import Request
 
 router = APIRouter()
 

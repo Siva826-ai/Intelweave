@@ -101,12 +101,26 @@ class CaseOut(BaseModel):
     integrity_score: float = Field(ge=0, le=100)
     created_at: datetime
 
+class EntityCreate(BaseModel):
+    entity_type: str = Field(..., pattern="^(person|phone|org|ip|device|vehicle|unknown)$")
+    label: str = Field(..., min_length=1, max_length=255)
+    risk_score: float = Field(default=0.0, ge=0, le=100)
+    confidence_score: float = Field(default=0.0, ge=0, le=100)
+
 class EntityOut(BaseModel):
     entity_id: UUID
     entity_type: str
     label: str
     risk_score: float = Field(ge=0, le=100)
     confidence_score: float = Field(ge=0, le=100)
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+class InsightCreate(BaseModel):
+    severity: str = Field(..., pattern="^(low|medium|high|critical)$")
+    summary: str = Field(..., min_length=1)
+    explanation: Optional[str] = None
+    confidence_score: float = Field(default=0.0, ge=0, le=100)
 
 class InsightOut(BaseModel):
     insight_id: UUID
@@ -116,6 +130,21 @@ class InsightOut(BaseModel):
     explanation: Optional[str] = None
     confidence_score: float = Field(ge=0, le=100)
     created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+class UserCreate(BaseModel):
+    email: str = Field(..., pattern=r"^\S+@\S+\.\S+$")
+    full_name: Optional[str] = None
+    clearance_level: int = Field(default=1, ge=1, le=5)
+
+class UserOut(BaseModel):
+    user_id: UUID
+    email: str
+    full_name: Optional[str] = None
+    clearance_level: int
+    is_active: bool
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
 
 class GraphNode(BaseModel):
     id: UUID

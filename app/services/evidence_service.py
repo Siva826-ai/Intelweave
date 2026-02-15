@@ -7,7 +7,6 @@ from app.services.audit_service import log_action
 from app.repositories import evidence_repository
 
 def create_evidence(db: Session, case_id: UUID, evidence: EvidenceCreate, user_id: UUID) -> EvidenceItem:
-    # Generate Hash
     import hashlib
     hash_input = f"{case_id}{evidence.evidence_type}{evidence.description}".encode()
     evidence_hash = hashlib.sha256(hash_input).hexdigest()

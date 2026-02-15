@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import List
 from app.db import models
+from app.db.schemas import InsightCreate
 from app.repositories import insight_repository
 
 @dataclass
@@ -37,3 +38,14 @@ def list_case_insights(db: Session, case_id: UUID, limit: int = 200) -> List[mod
 
 def get_high_priority_signals(db: Session, limit: int = 50) -> List[models.Insight]:
     return insight_repository.get_high_priority_signals(db, limit)
+
+def create_insight(db: Session, case_id: UUID, payload: InsightCreate, user_id: UUID) -> models.Insight:
+    return insight_repository.create_insight(
+        db,
+        case_id=case_id,
+        severity=payload.severity,
+        summary=payload.summary,
+        confidence_score=payload.confidence_score,
+        created_by=user_id,
+        explanation=payload.explanation
+    )

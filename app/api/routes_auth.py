@@ -3,8 +3,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.db.session import get_db
 from app.db import models
+from app.db.schemas import UserCreate, UserOut, DataResponse
 from app.core import security
 from app.api.deps import get_current_active_user
+from app.services import user_service
 from uuid import UUID
 
 router = APIRouter()
@@ -58,6 +60,23 @@ def refresh_token(refresh_token: str = Body(..., embed=True)):
     return {
         "access_token": new_access_token,
         "token_type": "bearer"
+    }
+
+@router.post("/register", response_model=DataResponse[UserOut])
+def register_user(payload: UserCreate, db: Session = Depends(get_db)):
+    """
+    Register a new user.
+    """
+    existing_user = user_service.get_user_by_email(db, payload.email)
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    user = user_service.create_user(db, payload)
+    return {
+        "data": user,
+        "metadata": {
+            "timestamp": user.created_at.isoformat()
+        }
     }
 
 @router.get("/me")

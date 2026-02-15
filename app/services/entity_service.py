@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import List, Optional
 from app.db import models
+from app.db.schemas import EntityCreate
 from app.repositories import entity_repository, evidence_repository, relationship_repository
 
 def get_entity(db: Session, entity_id: UUID) -> Optional[models.Entity]:
@@ -15,3 +16,12 @@ def get_entity_timeline(db: Session, entity_id: UUID) -> List[models.EvidenceIte
 
 def get_entity_connections(db: Session, entity_id: UUID) -> List[models.Relationship]:
     return relationship_repository.get_relationships_by_entity(db, entity_id)
+
+def create_entity(db: Session, payload: EntityCreate) -> models.Entity:
+    return entity_repository.create_entity(
+        db,
+        entity_type=payload.entity_type,
+        label=payload.label,
+        risk_score=payload.risk_score,
+        confidence_score=payload.confidence_score
+    )

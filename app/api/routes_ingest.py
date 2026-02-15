@@ -5,12 +5,13 @@ from typing import List
 
 from app.db.session import get_db
 from app.services import ingest_service
-from app.db.schemas import IngestJobCreate
+from app.db.schemas import IngestJobCreate, IngestJobOut, DataResponse
 
 from app.db import models
 from app.api.deps import get_current_active_user
 
 router = APIRouter()
+
 
 @router.post("/upload")
 def upload_files(
@@ -29,8 +30,8 @@ def upload_files(
     job = ingest_service.create_ingest_job(db, case_id, job_data, user.user_id, ip_address=ip)
 
     processed_files = []
+
     
-    # 2. Process Files (Integrating with existing flow assumption)
     for file in files:
         content = file.file.read()
         

@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.db import models
-from app.db.schemas import EntityOut, EvidenceOut, DataResponse, RelationshipOut
+from app.db.schemas import EntityOut, EntityCreate, EvidenceOut, DataResponse, RelationshipOut
 from typing import List
 from app.services import entity_service
 from app.api.deps import get_current_active_user
@@ -25,6 +25,7 @@ def search_entities(request: Request, q: str = Query(..., min_length=1), db: Ses
             for r in rows
         ]
     }
+
 
 @router.get("/{entity_id}")
 def get_entity(entity_id: UUID, request: Request, db: Session = Depends(get_db), user=Depends(get_current_active_user)):
