@@ -138,7 +138,13 @@ class ForensicAgent:
                 
                 # Check if they appear near each other or specific keywords exist
                 if e1["label"] in text and e2["label"] in text:
-                    text_context = text_lower[max(0, text.find(e1["label"])-100) : min(len(text), text.find(e2["label"])+100)]
+                    p1 = text.find(e1["label"])
+                    p2 = text.find(e2["label"])
+                    
+                    # Extract context correctly regardless of order
+                    start = min(p1, p2)
+                    end = max(p1, p2)
+                    text_context = text_lower[max(0, start-100) : min(len(text), end+100)]
                     
                     if "transfer" in text_context or "money" in text_context or "$" in text_context:
                         relationships.append({
@@ -155,6 +161,14 @@ class ForensicAgent:
                             "basis": "Suspicious communication pattern",
                             "strength_score": 95.0,
                             "confidence_score": 90.0
+                        })
+                    elif abs(p1 - p2) < 500: # Proximity Fallback for co-occurrence
+                        relationships.append({
+                            "source_label": e1["label"],
+                            "target_label": e2["label"],
+                            "basis": "Entity Co-occurrence (High Proximity)",
+                            "strength_score": 60.0,
+                            "confidence_score": 65.0
                         })
                     elif "altercation" in text_lower or "incident" in text_lower:
                         relationships.append({

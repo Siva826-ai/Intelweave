@@ -113,7 +113,7 @@ class EntityOut(BaseModel):
     label: str
     risk_score: float = Field(ge=0, le=100)
     confidence_score: float = Field(ge=0, le=100)
-    created_at: datetime
+    created_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
 
 class InsightCreate(BaseModel):
