@@ -48,5 +48,5 @@ def init_db():
         else:
             print("Seed case already exists.")
 
-if name == "main":
+if __name__ == "__main__":
     init_db()
